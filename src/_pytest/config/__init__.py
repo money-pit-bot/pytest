@@ -2135,7 +2135,12 @@ def parse_warning_filter(
         exception_text = exc_info.getrepr(style="native")
         raise UsageError(error_template.format(error=exception_text)) from None
     if message and escape:
-        message = re.escape(message)
+        # Handle * as a wildcard meaning "match any message" - convert to .* before escaping
+        # This allows users to use ignore::DeprecationWarning:* in their config
+        if message == "*":
+            message = ".*"
+        else:
+            message = re.escape(message)
     if module and escape:
         module = re.escape(module) + r"\Z"
     if lineno_:
